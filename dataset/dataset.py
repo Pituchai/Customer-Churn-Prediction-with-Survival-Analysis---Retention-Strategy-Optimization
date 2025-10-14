@@ -37,37 +37,88 @@ def generate_thai_churn_dataset(n_customers=100000):
         'Rujirawat', 'Pattanaporn', 'Kittisak', 'Watthanawong', 'Suwannapoom'
     ]
     
-    # Thai provinces (using major provinces)
+    # All 77 Thai provinces
     thai_provinces = [
+        # Bangkok Metropolitan Region (19.5%)
         'Bangkok', 'Nonthaburi', 'Pathum Thani', 'Samut Prakan', 'Samut Sakhon',
-        'Chiang Mai', 'Chiang Rai', 'Nakhon Ratchasima', 'Khon Kaen', 'Udon Thani',
-        'Ubon Ratchathani', 'Songkhla', 'Phuket', 'Surat Thani', 'Nakhon Si Thammarat',
-        'Ayutthaya', 'Chon Buri', 'Rayong', 'Nakhon Pathom', 'Ratchaburi',
-        'Lopburi', 'Saraburi', 'Phitsanulok', 'Lampang', 'Prachuap Khiri Khan'
+
+        # Central Region (20%)
+        'Ayutthaya', 'Ang Thong', 'Chai Nat', 'Kanchanaburi', 'Lop Buri',
+        'Nakhon Nayok', 'Nakhon Pathom', 'Prachin Buri', 'Samut Songkhram', 'Saraburi',
+        'Sing Buri', 'Suphan Buri', 'Ratchaburi', 'Phetchaburi', 'Prachuap Khiri Khan',
+
+        # Eastern Region (11%)
+        'Chachoengsao', 'Chanthaburi', 'Chon Buri', 'Rayong', 'Sa Kaeo', 'Trat',
+
+        # Northern Region (17%)
+        'Chiang Mai', 'Chiang Rai', 'Lampang', 'Lamphun', 'Mae Hong Son',
+        'Nan', 'Phayao', 'Phrae', 'Uttaradit',
+        'Kamphaeng Phet', 'Nakhon Sawan', 'Phetchabun', 'Phichit', 'Phitsanulok',
+        'Sukhothai', 'Tak', 'Uthai Thani',
+
+        # Northeastern Region (21%)
+        'Amnat Charoen', 'Bueng Kan', 'Buriram', 'Chaiyaphum', 'Kalasin',
+        'Khon Kaen', 'Loei', 'Maha Sarakham', 'Mukdahan', 'Nakhon Phanom',
+        'Nakhon Ratchasima', 'Nong Bua Lam Phu', 'Nong Khai', 'Roi Et', 'Sakon Nakhon',
+        'Si Sa Ket', 'Surin', 'Ubon Ratchathani', 'Udon Thani', 'Yasothon',
+
+        # Southern Region (11.5%)
+        'Chumphon', 'Krabi', 'Nakhon Si Thammarat', 'Narathiwat', 'Pattani',
+        'Phang Nga', 'Phatthalung', 'Phuket', 'Ranong', 'Satun',
+        'Songkhla', 'Surat Thani', 'Trang', 'Yala'
     ]
-    
-    # Province weights (Bangkok Metro area has more customers) - FIXED TO SUM TO 1.0
+
+    # Province weights (Bangkok Metro area has more customers, then Central, Northeast, North, East, South)
     province_weights = np.array([
-        0.25, 0.08, 0.06, 0.05, 0.03,  # Bangkok Metro = 0.47
-        0.04, 0.02, 0.04, 0.03, 0.03,  # North & Northeast = 0.16
-        0.03, 0.03, 0.03, 0.03, 0.02,  # South = 0.14
-        0.03, 0.04, 0.03, 0.03, 0.02,  # Central = 0.15
-        0.02, 0.02, 0.02, 0.02, 0.02   # Others = 0.10
+        # Bangkok Metro (19.5% total)
+        0.120, 0.035, 0.020, 0.015, 0.005,
+
+        # Central (20% total)
+        0.025, 0.008, 0.006, 0.015, 0.010,
+        0.007, 0.020, 0.008, 0.004, 0.012,
+        0.005, 0.012, 0.015, 0.010, 0.008,
+
+        # East (11% total)
+        0.012, 0.008, 0.040, 0.025, 0.008, 0.007,
+
+        # North (17% total)
+        0.030, 0.020, 0.015, 0.008, 0.005,
+        0.006, 0.006, 0.006, 0.006,
+        0.008, 0.015, 0.010, 0.008, 0.015,
+        0.010, 0.008, 0.006,
+
+        # Northeast (21% total)
+        0.005, 0.005, 0.015, 0.010, 0.008,
+        0.025, 0.008, 0.010, 0.006, 0.006,
+        0.035, 0.006, 0.010, 0.012, 0.008,
+        0.010, 0.012, 0.020, 0.018, 0.006,
+
+        # South (11.5% total)
+        0.008, 0.010, 0.018, 0.006, 0.006,
+        0.008, 0.008, 0.015, 0.005, 0.005,
+        0.020, 0.015, 0.008, 0.006
     ])
     # Normalize to ensure sum = 1.0
     province_weights = province_weights / province_weights.sum()
-    
-    # Thai postal codes by province (simplified - first 2 digits)
+
+    # Thai postal codes by province (first 2 digits)
     province_postcodes = {
-        'Bangkok': '10', 'Nonthaburi': '11', 'Pathum Thani': '12', 
-        'Samut Prakan': '10', 'Samut Sakhon': '74',
-        'Chiang Mai': '50', 'Chiang Rai': '57', 'Nakhon Ratchasima': '30',
-        'Khon Kaen': '40', 'Udon Thani': '41', 'Ubon Ratchathani': '34',
-        'Songkhla': '90', 'Phuket': '83', 'Surat Thani': '84',
-        'Nakhon Si Thammarat': '80', 'Ayutthaya': '13', 'Chon Buri': '20',
-        'Rayong': '21', 'Nakhon Pathom': '73', 'Ratchaburi': '70',
-        'Lopburi': '15', 'Saraburi': '18', 'Phitsanulok': '65',
-        'Lampang': '52', 'Prachuap Khiri Khan': '77'
+        'Bangkok': '10', 'Nonthaburi': '11', 'Pathum Thani': '12', 'Samut Prakan': '10', 'Samut Sakhon': '74',
+        'Ayutthaya': '13', 'Ang Thong': '14', 'Chai Nat': '17', 'Kanchanaburi': '71', 'Lop Buri': '15',
+        'Nakhon Nayok': '26', 'Nakhon Pathom': '73', 'Prachin Buri': '25', 'Samut Songkhram': '75', 'Saraburi': '18',
+        'Sing Buri': '16', 'Suphan Buri': '72', 'Ratchaburi': '70', 'Phetchaburi': '76', 'Prachuap Khiri Khan': '77',
+        'Chachoengsao': '24', 'Chanthaburi': '22', 'Chon Buri': '20', 'Rayong': '21', 'Sa Kaeo': '27', 'Trat': '23',
+        'Chiang Mai': '50', 'Chiang Rai': '57', 'Lampang': '52', 'Lamphun': '51', 'Mae Hong Son': '58',
+        'Nan': '55', 'Phayao': '56', 'Phrae': '54', 'Uttaradit': '53',
+        'Kamphaeng Phet': '62', 'Nakhon Sawan': '60', 'Phetchabun': '67', 'Phichit': '66', 'Phitsanulok': '65',
+        'Sukhothai': '64', 'Tak': '63', 'Uthai Thani': '61',
+        'Amnat Charoen': '37', 'Bueng Kan': '38', 'Buriram': '31', 'Chaiyaphum': '36', 'Kalasin': '46',
+        'Khon Kaen': '40', 'Loei': '42', 'Maha Sarakham': '44', 'Mukdahan': '49', 'Nakhon Phanom': '48',
+        'Nakhon Ratchasima': '30', 'Nong Bua Lam Phu': '39', 'Nong Khai': '43', 'Roi Et': '45', 'Sakon Nakhon': '47',
+        'Si Sa Ket': '33', 'Surin': '32', 'Ubon Ratchathani': '34', 'Udon Thani': '41', 'Yasothon': '35',
+        'Chumphon': '86', 'Krabi': '81', 'Nakhon Si Thammarat': '80', 'Narathiwat': '96', 'Pattani': '94',
+        'Phang Nga': '82', 'Phatthalung': '93', 'Phuket': '83', 'Ranong': '85', 'Satun': '91',
+        'Songkhla': '90', 'Surat Thani': '84', 'Trang': '92', 'Yala': '95'
     }
     
     # Thai telecom providers for switching scenarios
@@ -129,8 +180,13 @@ def generate_thai_churn_dataset(n_customers=100000):
         )
         
         # ===== SERVICES =====
-        # Internet service (Thai market - high fiber penetration in cities)
-        if province in ['Bangkok', 'Nonthaburi', 'Pathum Thani', 'Chiang Mai', 'Chon Buri']:
+        # Internet service (Thai market - high fiber penetration in major cities)
+        major_cities = [
+            'Bangkok', 'Nonthaburi', 'Pathum Thani', 'Samut Prakan', 'Chiang Mai',
+            'Chon Buri', 'Phuket', 'Khon Kaen', 'Nakhon Ratchasima', 'Songkhla',
+            'Rayong', 'Udon Thani', 'Nakhon Pathom', 'Surat Thani'
+        ]
+        if province in major_cities:
             internet_weights = np.array([0.45, 0.20, 0.15, 0.10, 0.10])
             internet_weights = internet_weights / internet_weights.sum()
             internet_service = np.random.choice(
@@ -291,7 +347,7 @@ def generate_thai_churn_dataset(n_customers=100000):
             days_to_contract_end = 0
         
         # ===== CHURN PROBABILITY CALCULATION =====
-        churn_prob = 0.12  # Base churn rate for Thai telecom (slightly higher than global)
+        churn_prob = 0.50  # Base churn rate for Thai telecom (increased to achieve 25-30% overall rate)
         
         # Risk factors that INCREASE churn
         if contract_type == 'Prepaid':
@@ -332,7 +388,7 @@ def generate_thai_churn_dataset(n_customers=100000):
         if last_login_days_ago > 60:
             churn_prob += 0.10  # Low engagement
         
-        if province not in ['Bangkok', 'Nonthaburi', 'Pathum Thani', 'Chiang Mai']:
+        if province not in major_cities:
             churn_prob += 0.05  # Less competitive markets
         
         # Protective factors that DECREASE churn
@@ -408,10 +464,30 @@ def generate_thai_churn_dataset(n_customers=100000):
             # Location (Thailand)
             'province': province,
             'postcode': postcode,
-            'region': 'Central' if province in ['Bangkok', 'Nonthaburi', 'Pathum Thani', 'Samut Prakan', 'Nakhon Pathom'] 
-                      else 'North' if province in ['Chiang Mai', 'Chiang Rai', 'Lampang', 'Phitsanulok']
-                      else 'Northeast' if province in ['Khon Kaen', 'Udon Thani', 'Ubon Ratchathani', 'Nakhon Ratchasima']
-                      else 'South',
+            'region': (
+                'Central' if province in [
+                    'Bangkok', 'Nonthaburi', 'Pathum Thani', 'Samut Prakan', 'Samut Sakhon',
+                    'Ayutthaya', 'Ang Thong', 'Chai Nat', 'Kanchanaburi', 'Lop Buri',
+                    'Nakhon Nayok', 'Nakhon Pathom', 'Prachin Buri', 'Samut Songkhram', 'Saraburi',
+                    'Sing Buri', 'Suphan Buri', 'Ratchaburi', 'Phetchaburi', 'Prachuap Khiri Khan'
+                ]
+                else 'East' if province in [
+                    'Chachoengsao', 'Chanthaburi', 'Chon Buri', 'Rayong', 'Sa Kaeo', 'Trat'
+                ]
+                else 'North' if province in [
+                    'Chiang Mai', 'Chiang Rai', 'Lampang', 'Lamphun', 'Mae Hong Son',
+                    'Nan', 'Phayao', 'Phrae', 'Uttaradit',
+                    'Kamphaeng Phet', 'Nakhon Sawan', 'Phetchabun', 'Phichit', 'Phitsanulok',
+                    'Sukhothai', 'Tak', 'Uthai Thani'
+                ]
+                else 'Northeast' if province in [
+                    'Amnat Charoen', 'Bueng Kan', 'Buriram', 'Chaiyaphum', 'Kalasin',
+                    'Khon Kaen', 'Loei', 'Maha Sarakham', 'Mukdahan', 'Nakhon Phanom',
+                    'Nakhon Ratchasima', 'Nong Bua Lam Phu', 'Nong Khai', 'Roi Et', 'Sakon Nakhon',
+                    'Si Sa Ket', 'Surin', 'Ubon Ratchathani', 'Udon Thani', 'Yasothon'
+                ]
+                else 'South'
+            ),
             
             # Account
             'account_created_date': account_created.strftime('%Y-%m-%d'),
